@@ -1,19 +1,17 @@
-function createHousehold (reducer) {
-    var state;
-    var listeners = [];
+const createHousehold = (reducer) => {
+    let state;
+    let listeners = [];
 
-    var getState = function () {
-        return state
-    };
+    const getState = () => state;
 
-    var subscribe = function (listener) {
+    const subscribe = (listener) => {
         listeners.push(listener);
         return function () {
             listeners = listeners.filter(function (l) { return l !== listener })
         }
     }
 
-    var dispatch = function (action) {
+    const dispatch = (action) => {
         state = reducer(state, action)
         listeners.forEach((listener) => listener())
     }
@@ -25,24 +23,24 @@ function createHousehold (reducer) {
     }
 }
 
-var ADD_PERSON = "ADD_PERSON";
-var REMOVE_PERSON = "REMOVE_PERSON";
+const ADD_PERSON = "ADD_PERSON";
+const REMOVE_PERSON = "REMOVE_PERSON";
 
-function addPersonAction (person) {
+const addPersonAction = (person) => {
     return {
         'type': ADD_PERSON,
         'person': person
     }
 }
 
-function removePersonAction (id) {
+const removePersonAction = (id) => {
     return {
         'type': REMOVE_PERSON,
         'id': id
     }
 }
 
-function validator (store, action) {
+const validator = (store, action) => {
     if (action.type === ADD_PERSON && (typeof action.person.age === 'undefined' || typeof action.person.age == null || action.person.age === "")) {
         return alert('An age entry is required.');
     } else if (action.type === ADD_PERSON && (isNaN(parseInt(action.person.age)) || parseInt(action.person.age) < 0)) {
@@ -54,7 +52,7 @@ function validator (store, action) {
     return store.dispatch(action);
 }
 
-function people (state = [], action) {
+const people = (state = [], action) => {
     switch(action.type){
         case ADD_PERSON:
             return state.concat([action.person]);
@@ -67,13 +65,13 @@ function people (state = [], action) {
     }
 }
 
-function app (state = {}, action) {
+const app = (state = {}, action) => {
     return {
         'people': people(state.people, action),
     }
 }
 
-var store = createHousehold(app);
+let store = createHousehold(app);
 
 store.subscribe(() => {
     var household = store.getState();
@@ -82,11 +80,11 @@ store.subscribe(() => {
     household.people.forEach(addPersonToDOM);
 })
 
-function addPersonToDOM (person) {
-    var node = document.createElement('li');
-    var personText = 'Age: ' + person.age + ', ' + 'Relationship: ' + person.rel + ', ' + 'Smoker: ' + (person.smoker ? 'true' : 'false');
-    var text = document.createTextNode(personText);
-    var removeBtn = createRemoveButton(function () {
+const addPersonToDOM = (person) => {
+    let node = document.createElement('li');
+    let personText = 'Age: ' + person.age + ', ' + 'Relationship: ' + person.rel + ', ' + 'Smoker: ' + (person.smoker ? 'true' : 'false');
+    let text = document.createTextNode(personText);
+    let removeBtn = createRemoveButton(function () {
         validator(store, removePersonAction(person.id))
     });
     node.appendChild(text);
@@ -95,28 +93,28 @@ function addPersonToDOM (person) {
     document.getElementsByClassName('household')[0].appendChild(node);
 }
 
-function generateId() {
+const generateId = () => {
     return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 }
 
-function createRemoveButton (onClick) {
-    var removeBtn = document.createElement('button');
+const createRemoveButton = (onClick) => {
+    const removeBtn = document.createElement('button');
     removeBtn.innerHTML = "X";
     removeBtn.addEventListener('click', onClick);
 
     return removeBtn;
 }
 
-function addPerson () {
+const addPerson = () => {
     event.preventDefault();
-    var input_age = document.getElementsByName('age')[0];
-    var age = input_age.value
+    let input_age = document.getElementsByName('age')[0];
+    let age = input_age.value
     input_age.value = '';
-    var input_rel = document.getElementsByName('rel')[0];
-    var rel = input_rel.value;
+    let input_rel = document.getElementsByName('rel')[0];
+    let rel = input_rel.value;
     input_rel.value = '';
-    var input_smoker = document.getElementsByName('smoker')[0];
-    var smoker = input_smoker.checked;
+    let input_smoker = document.getElementsByName('smoker')[0];
+    let smoker = input_smoker.checked;
     input_smoker.checked = false;
     validator (store, addPersonAction({
         'id': generateId(),
@@ -124,23 +122,6 @@ function addPerson () {
         'rel': rel,
         'smoker': smoker
     }));
-}
-
-function fakeJSON () {
-    event.preventDefault();
-    var jsonText = JSON.stringify(store.getState());
-
-    document.getElementsByTagName('pre')[0].innerText = jsonText;
-
-    //var xhr = new XMLHttpRequest();
-    //xhr.open('POST', '/server', true);
-    //xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-
-    //xhr.send(JSON.stringify(data));
-
-    //xhr.onloadend = function () {
-        // console.log('Your form has been submitted.')
-    //};
 }
 
 document.getElementsByClassName('add')[0].addEventListener('click', addPerson);
